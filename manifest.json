@@ -1,0 +1,17 @@
+{
+  "manifest_version": 2,
+
+  "name": "Detoxify",
+  "description": "Extension to detoxify comments on social networks",
+  "version": "1.0",
+  "browser_action": {
+    "default_popup": "index.html"
+  },
+  "permissions": [],
+  "content_scripts": [
+    {
+      "matches": ["*://boards.4chan.org/*" ],
+      "js": [ "content.js" ]
+    }
+  ]
+}

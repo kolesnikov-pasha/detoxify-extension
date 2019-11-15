@@ -1,8 +1,8 @@
 import axios from 'axios'
 
 let sendText = text => {
-    const url = '0:88/detoxify_text';
-    axios.get(url, {
+    const url = '0:88/detoxify';
+    axios.post(url, {
         params: {
             text: text
         }
@@ -12,8 +12,8 @@ let sendText = text => {
 }
 
 let sendImage = image => {
-    const url = '0:88/detoxify_image';
-    axios.get(url, {
+    const url = '0:88/detoxify';
+    axios.post(url, {
         params: {
             image: image
         }

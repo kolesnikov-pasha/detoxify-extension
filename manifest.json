@@ -5,7 +5,13 @@
   "description": "Extension to detoxify comments on social networks",
   "version": "1.0",
   "browser_action": {
-    "default_popup": "index.html"
+    "default_popup": "index.html",
+    "default_icon": "logo+border.png",
+    "icons": {
+      "16": "logo+border.png",
+      "48": "logo+border.png",
+      "128": "logo+border.png"
+    }
   },
   "permissions": ["http://127.0.0.1:8080/"],
   "content_scripts": [

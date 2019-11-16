@@ -7,9 +7,9 @@ let sendText = text => {
             text: text
         }
     })
-    .then(data => return data)
-    .catch(err => console.log(err))
-}
+    .then(data => {return data})
+    .catch(err => {console.log(err)})
+};
 
 let sendImage = image => {
     const url = '0:88/detoxify';
@@ -18,7 +18,7 @@ let sendImage = image => {
             image: image
         }
     })
-    .then(data => return data)
-    .catch(err => console.log(err))
-}
+    .then(data => {return data})
+    .catch(err => {console.log(err)})
+};
 

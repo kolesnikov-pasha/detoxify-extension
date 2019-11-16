@@ -51,6 +51,10 @@ function patchXhr() {
 
         let observer;
 
+        function isDigit(c) {
+            return "0" <= c && c <= "9";
+        }
+
         function hookProperty(obj, key, get_fun, set_fun) {
             let value;
 
@@ -71,37 +75,73 @@ function patchXhr() {
             );
         }
 
+        function makeComplexPlaceholder(text, placeholder) {
+            let retText = "";
+            let retPlaceholder = "";
+
+            let words = text.split(" ");
+            let wordIndex = 0;
+
+            for (; wordIndex < words.length; wordIndex++) {
+                let word = words[wordIndex];
+
+                if (word[0] != "@") {
+                    break;
+                }
+
+                retPlaceholder += word + " ";
+            }
+
+            retPlaceholder += placeholder + " ";
+
+            for (; wordIndex < words.length; wordIndex++) {
+                let word = words[wordIndex];
+
+                if (word.startsWith("http://") || word.startsWith("https://")) {
+                    retPlaceholder += word + " ";
+                } else {
+                    retText += word + " ";
+                }
+            }
+
+            return [
+                retText.substr(0, retText.length - 1),
+                retPlaceholder.substr(0, retPlaceholder.length - 1)
+            ];
+        }
+
         function makePlaceholder(seed) {
             return "\u2800" + seed.toString();
         }
 
         function walkTweets(tree) {
-            if (typeof tree != "object") {
+            if (typeof tree != "object" || tree == null) {
                 return;
             }
 
-            if ("id_str" in tree) {
-                console.log(tree["id_str"]);
-            }
+            let isStatus = location.href.includes("/status/");
 
             for (let key in tree) {
                 if (key == "full_text") {
-                    try {
-                        decodeURIComponent(encodeURIComponent(tree[key]));
-                    } catch (exc) {
+                    let placeholder = makePlaceholder(nextTweetId);
+
+                    if (isStatus) {
                         console.log(tree[key]);
-                    }
 
-                    tweetIdToText[nextTweetId] = tree[key];
+                        for (let i = 0; i < tree[key].length; i++) {
+                            console.log(tree[key].charCodeAt(i));
+                        }
 
-                    let isStatus = location.href.includes("/status/");
+                        let [text, complexPlaceholder] =
+                            makeComplexPlaceholder(tree[key], placeholder);
 
-                    let username = tree[key].trim().match(/@[a-zA-Z0-9_]+/);
-
-                    if (username == null || !isStatus) {
-                        tree[key] = makePlaceholder(nextTweetId);
+                        if (text.length > 0) {
+                            tweetIdToText[nextTweetId] = text;
+                            tree[key] = complexPlaceholder;
+                        }
                     } else {
-                        tree[key] = username + " " + makePlaceholder(nextTweetId);
+                        tweetIdToText[nextTweetId] = tree[key];
+                        tree[key] = placeholder;
                     }
 
                     nextTweetId++;
@@ -116,13 +156,19 @@ function patchXhr() {
 
             for (let span of spans) {
                 let idStr = span.innerText.trim();
-                let fhtagnIndex = idStr.indexOf("\u2800");
+                let fhtagnStart = idStr.indexOf("\u2800");
 
-                if (fhtagnIndex < 0) {
+                if (fhtagnStart < 0) {
                     continue;
                 }
 
-                let id = parseInt(idStr.substr(fhtagnIndex + 1));
+                let fhtagnEnd = fhtagnStart + 1;
+
+                while (fhtagnEnd < idStr.length && isDigit(idStr[fhtagnEnd])) {
+                    fhtagnEnd++;
+                }
+
+                let id = parseInt(idStr.slice(fhtagnStart + 1, fhtagnEnd));
 
                 span.innerText = "⌛️";
 
@@ -220,12 +266,11 @@ function patchXhr() {
             document.addEventListener("detoxifyTweetResponse", event => {
                 let response = event.detail;
                 let id = response.tweetId;
+                let element = tweetIdToElement[id];
+                let text = response.tweetText || tweetIdToText[id];
 
-                if ("tweetText" in response) {
-                    tweetIdToElement[id].innerText = response.tweetText;
-                } else {
-                    tweetIdToElement[id].innerText = tweetIdToText[id];
-                }
+                [_, element.innerText] =
+                    makeComplexPlaceholder(element.innerText, text);
             });
 
             observer = new MutationObserver((mutations, observer) => {

@@ -1,46 +1,35 @@
-//import {sendText} from './api'
-
-let data = {};
+let data = JSON.parse("{}");
 
 let sendText = (text, onResult) => {
-    const url = 'http://0.0.0.0:8888/detoxify?params=' + JSON.stringify({'text': text});
+    const url = 'http://0.0.0.0:8888/detoxify?params="' + JSON.stringify({'text': text} + '"');
     console.log(url);
     xhr = new XMLHttpRequest();
     xhr.open("POST", url, true);
     xhr.send();
     if (xhr.status !== 200) {
         console.log(xhr.status + ': ' + xhr.statusText);
-        onResult("detoxify error");
+        setTimeout(onResult("detoxify error"), 500);
     } else {
         onResult(xhr.responseText);
     }
 };
 
 function updateElement(id, text) {
-    let words = text.split(" ");
-    console.log(text);
-    text = "";
-    let isStart = true;
-    for (let word of words) {
-        if (word.slice(0, 1) === "@" && isStart) {
-            isStart = true;
-        } else {
-            if (isStart) {
-                text = word;
-            } else {
-                text += ' ' + word;
-            }
-            isStart = false;
-        }
-    }
-    console.log(text);
     let spans = document.getElementsByTagName("span");
     for (let i = 0; i < spans.length; i++) {
         let item = spans.item(i);
-        if (text === item.innerText) {
+        if (text.includes(item.innerText) && (item.innerText.length / text.length > 0.8)) {
             sendText(item.innerText, data => {
-                item.innerText = data;
-                item.setAttribute(DETOXIFIED_ATTRIBUTE_NAME, id);
+                if (data === "") {
+                    return;
+                }
+                if (item.hasAttribute(DETOXIFIED_ATTRIBUTE_NAME)) {
+                    return;
+                }
+                if (data !== "") {
+                    item.innerText = data;
+                    item.setAttribute(DETOXIFIED_ATTRIBUTE_NAME, id);
+                }
             });
         }
     }
@@ -69,13 +58,38 @@ function interceptData() {
                 document.body.appendChild(dataDOMElement);
             }               
         });
+        let event = new Event("onResponseInterception", {});
+        document.dispatchEvent(event);
         return send.apply(this, arguments);
     };
 })();
     `;
     document.head.prepend(xhrOverrideScript);
-    scrapeData();
-    setInterval(scrapeData, 1000);
+}
+
+function processText(text) {
+    let words = text.split(" ");
+    console.log(text);
+    text = "";
+    let isStart = true;
+    for (let word of words) {
+        if (word.slice(0, 1) === "@" && isStart) {
+            isStart = true;
+        } else {
+            if (word.slice(0, 4) === "http") {
+                isStart = false;
+                continue;
+            }
+            if (isStart) {
+                text = word;
+            } else {
+                text += ' ' + word;
+            }
+            isStart = false;
+        }
+    }
+    console.log(text);
+    return text;
 }
 
 function checkForDOM() {
@@ -93,51 +107,20 @@ function scrapeData() {
             const response = JSON.parse(divs.item(i).innerHTML);
             let tweets = response.globalObjects.tweets;
             for (let key in tweets) {
-                data[key] = tweets[key].full_text;
-                updateElement(key, tweets[key].full_text);
+                data[key] = processText(tweets[key].full_text);
             }
+            divs.item(i).remove();
         }
+    }
+    for (let key in data) {
+        updateElement(key, data[key]);
     }
 }
 
 const DETOXIFIED_ATTRIBUTE_NAME = "is-detoxified";
 
-function getTwits() {
-
-}
-
-function onLoad() {
-    //dfs(document.body)
-    let elements = document.getElementsByClassName("css-901oao css-16my406 r-1qd0xha r-ad9z0x r-bcqeeo r-qvutc0");
-    for (let i = 0; i < elements.length; i++) {
-        let el = elements[i];
-        if (elements[i].getAttribute(DETOXIFIED_ATTRIBUTE_NAME) != null) {
-            continue;
-        }
-        if (elements[i].getAttribute("data-testid") !== "tweet") {
-            continue;
-        }
-        if (elements[i].childNodes === null) {
-            continue;
-        }
-        if (elements[i].childNodes.length < 2) {
-            continue;
-        }
-        let textGroup = elements[i].childNodes.item(1);
-        if (textGroup === null) {
-            continue;
-        }
-        if (textGroup.childNodes.length < 3) {
-            continue;
-        }
-        textGroup.childNodes.forEach((el) => {
-            if (el !== null) {
-                console.log("detoxify");
-                el.setAttribute(DETOXIFIED_ATTRIBUTE_NAME, "true");
-                el.innerText = "😽";
-            }
-        });
-    }
-}
-/* dkfjhsdkfj */
+document.addEventListener("onResponseInterception", () => {
+    scrapeData();
+    //console.log("onResponseInterception");
+});
 document.addEventListener("DOMContentLoaded", checkForDOM);

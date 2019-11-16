@@ -26,18 +26,16 @@ function updateElement(id) {
         if (text.includes(item.innerText) && (item.innerText.length / text.length > 0.8)) {
             if (data[id].has_result) {
                 let result = data[id].response;
-                if (result === "") {
-                    return;
+                if ("text" in result) {
+                    item.innerText = result.text;
                 }
-                item.innerText = result;
             } else {
                 sendText(item.innerText, result => {
                     data[id].has_result = true;
-                    data[id].response = result;
-                    if (result === "") {
-                        return;
+                    data[id].response = JSON.parse(result);
+                    if ("text" in data[id].response) {
+                        item.innerText = result.text;
                     }
-                    item.innerText = result;
                 });
             }
         }

@@ -1,15 +1,15 @@
 let data = JSON.parse("{}");
 
 let sendText = (text, onResult) => {
-    const url = 'http://0.0.0.0:8080/detoxify';
-    console.log(url);
+    const url = 'http://127.0.0.1:8080/detoxify';
     xhr = new XMLHttpRequest();
     xhr.open("POST", url, true);
-    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(JSON.stringify({"text": text}));
     xhr.onreadystatechange = function() {
-        console.log("onreadystatechange");
         if (xhr.readyState === 4 && xhr.status === 200) {
+            console.log("Success");
+            console.log(xhr.responseText);
             onResult(xhr.responseText);
         }
         if (xhr.readyState === 4 && xhr.status !== 200) {

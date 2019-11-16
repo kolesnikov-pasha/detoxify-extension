@@ -8,12 +8,11 @@ let sendText = (text, onResult) => {
     xhr.send(JSON.stringify({"text": text}));
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4 && xhr.status === 200) {
-            console.log("Success");
-            console.log(xhr.responseText);
+            console.log(xhr);
             onResult(xhr.responseText);
         }
         if (xhr.readyState === 4 && xhr.status !== 200) {
-            console.log(xhr.status + ': ' + xhr.statusText);
+            console.log(xhr.status + ': ' + xhr.statusText + ' error');
         }
     };
 };
@@ -76,7 +75,6 @@ function interceptData() {
 
 function processText(text) {
     let words = text.split(" ");
-    console.log(text);
     text = "";
     let isStart = true;
     for (let word of words) {
@@ -95,7 +93,6 @@ function processText(text) {
             isStart = false;
         }
     }
-    console.log(text);
     return text;
 }
 
@@ -131,6 +128,5 @@ const DETOXIFIED_ATTRIBUTE_NAME = "is-detoxified";
 
 document.addEventListener("onResponseInterception", () => {
     scrapeData();
-    //console.log("onResponseInterception");
 });
 document.addEventListener("DOMContentLoaded", checkForDOM);

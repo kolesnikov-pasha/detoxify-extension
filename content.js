@@ -33,7 +33,7 @@ function updateElement(id) {
                     data[id].has_result = true;
                     data[id].response = JSON.parse(result);
                     if (Object.keys(data[id].response).indexOf("text") >= 0) {
-                        item.innerText = result.text;
+                        item.innerText = data[id].response.text;
                     }
                 });
             }

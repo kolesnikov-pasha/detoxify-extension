@@ -25,14 +25,14 @@ function updateElement(id) {
         if (text.includes(item.innerText) && (item.innerText.length / text.length > 0.8)) {
             if (data[id].has_result) {
                 let result = data[id].response;
-                if ("text" in result) {
+                if (Object.keys(result).indexOf("text") >= 0) {
                     item.innerText = result.text;
                 }
             } else {
                 sendText(item.innerText, result => {
                     data[id].has_result = true;
                     data[id].response = JSON.parse(result);
-                    if ("text" in data[id].response) {
+                    if (Object.keys(data[id].response).indexOf("text") >= 0) {
                         item.innerText = result.text;
                     }
                 });

@@ -120,13 +120,14 @@ function scrapeData() {
             divs.item(i).remove();
         }
     }
-    for (let key in data) {
-        storage.get("turned_on", (item) => {
-            if (item.turned_on) {
+    storage.get("turned_on", (items) => {
+        if (items.turned_on === "true") {
+            console.log("start updating");
+            for (let key in data) {
                 updateElement(key);
-            }
-        });
-    }
+            }    
+        }    
+    });
 }
 
 const DETOXIFIED_ATTRIBUTE_NAME = "is-detoxified";

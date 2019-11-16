@@ -24,5 +24,18 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById("img_face").setAttribute("src", "unhappy.png");
         }
     });
+    let css = '.h1 { background: red; opacity: 0.5; }',
+        head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style');
+
+    head.appendChild(style);
+
+    style.type = 'text/css';
+    if (style.styleSheet){
+        // This is required for IE8 and below.
+        style.styleSheet.cssText = css;
+    } else {
+        style.appendChild(document.createTextNode(css));
+    }
     checkbox.addEventListener('click', () => update(checkbox), false);
 }, false);

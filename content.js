@@ -35,6 +35,7 @@ function updateElement(id) {
                     data[id].response = JSON.parse(result);
                     if (Object.keys(data[id].response).indexOf("text") >= 0) {
                         item.innerText = data[id].response.text;
+                        item.setAttribute("class", "my_span " + item.getAttribute("class"));
                     }
                 });
             }
@@ -135,4 +136,19 @@ const DETOXIFIED_ATTRIBUTE_NAME = "is-detoxified";
 document.addEventListener("onResponseInterception", () => {
     scrapeData();
 });
-document.addEventListener("DOMContentLoaded", checkForDOM);
+document.addEventListener("DOMContentLoaded", () => {
+    let css = '.my_span { background: #A1FFA5; opacity: 0.5; }',
+        head = document.head || document.getElementsByTagName('head')[0],
+        style = document.createElement('style');
+
+    head.appendChild(style);
+
+    style.type = 'text/css';
+    if (style.styleSheet){
+        // This is required for IE8 and below.
+        style.styleSheet.cssText = css;
+    } else {
+        style.appendChild(document.createTextNode(css));
+    }
+    checkForDOM();
+});

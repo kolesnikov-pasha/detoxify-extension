@@ -9,12 +9,11 @@ let sendText = (text, onResult) => {
     xhr.send(JSON.stringify({"text": text}));
     xhr.onreadystatechange = function() {
         console.log("onreadystatechange");
-        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+        if (xhr.readyState === 4 && xhr.status === 200) {
             onResult(xhr.responseText);
         }
-        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status !== 200) {
+        if (xhr.readyState === 4 && xhr.status !== 200) {
             console.log(xhr.status + ': ' + xhr.statusText);
-            setTimeout(onResult("detoxify error"), 500);
         }
     };
 };

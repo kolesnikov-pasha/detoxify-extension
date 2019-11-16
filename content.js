@@ -1,11 +1,12 @@
 let data = JSON.parse("{}");
 
 let sendText = (text, onResult) => {
-    const url = 'http://0.0.0.0:8888/detoxify?params="{"text":"' + text + '"}"';
+    const url = 'http://0.0.0.0:8888/detoxify';
     console.log(url);
     xhr = new XMLHttpRequest();
     xhr.open("POST", url, true);
-    xhr.send();
+    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xhr.send(JSON.stringify({"text": text}));
     if (xhr.status !== 200) {
         console.log(xhr.status + ': ' + xhr.statusText);
         setTimeout(onResult("detoxify error"), 500);

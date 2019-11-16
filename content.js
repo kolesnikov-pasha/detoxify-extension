@@ -18,23 +18,28 @@ let sendText = (text, onResult) => {
     };
 };
 
-function updateElement(id, text) {
+function updateElement(id) {
+    let text = data[id].text;
     let spans = document.getElementsByTagName("span");
     for (let i = 0; i < spans.length; i++) {
         let item = spans.item(i);
         if (text.includes(item.innerText) && (item.innerText.length / text.length > 0.8)) {
-            sendText(item.innerText, data => {
-                if (data === "") {
+            if (data[id].has_result) {
+                let result = data[id].response;
+                if (result === "") {
                     return;
                 }
-                if (item.hasAttribute(DETOXIFIED_ATTRIBUTE_NAME)) {
-                    return;
-                }
-                if (data !== "") {
-                    item.innerText = data;
-                    item.setAttribute(DETOXIFIED_ATTRIBUTE_NAME, id);
-                }
-            });
+                item.innerText = result;
+            } else {
+                sendText(item.innerText, result => {
+                    data[id].has_result = true;
+                    data[id].response = result;
+                    if (result === "") {
+                        return;
+                    }
+                    item.innerText = result;
+                });
+            }
         }
     }
 }
@@ -111,13 +116,16 @@ function scrapeData() {
             const response = JSON.parse(divs.item(i).innerHTML);
             let tweets = response.globalObjects.tweets;
             for (let key in tweets) {
-                data[key] = processText(tweets[key].full_text);
+                if (Object.keys(data).indexOf(key) >= 0) {
+                    continue;
+                }
+                data[key] = {text: processText(tweets[key].full_text), has_result: false, response: ""};
             }
             divs.item(i).remove();
         }
     }
     for (let key in data) {
-        updateElement(key, data[key]);
+        updateElement(key);
     }
 }
 

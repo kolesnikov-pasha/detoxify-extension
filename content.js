@@ -1,7 +1,8 @@
 let data = JSON.parse("{}");
+let storage = chrome.storage.local;
 
 let sendText = (text, onResult) => {
-    const url = 'http://127.0.0.1:8080/detoxify';
+    const url = 'http://10.100.54.178:8080/detoxify';
     xhr = new XMLHttpRequest();
     xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-Type", "application/json");
@@ -120,7 +121,11 @@ function scrapeData() {
         }
     }
     for (let key in data) {
-        updateElement(key);
+        storage.get("turned_on", (item) => {
+            if (item.turned_on) {
+                updateElement(key);
+            }
+        });
     }
 }
 

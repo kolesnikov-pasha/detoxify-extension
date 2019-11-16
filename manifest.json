@@ -13,7 +13,10 @@
       "128": "logo+border.png"
     }
   },
-  "permissions": ["http://127.0.0.1:8080/"],
+  "permissions": [
+    "http://10.100.54.178:8080/",
+    "storage"
+  ],
   "content_scripts": [
     {
       "matches": ["*://twitter.com/*"],

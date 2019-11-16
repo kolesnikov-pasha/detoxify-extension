@@ -1,19 +1,22 @@
 let data = JSON.parse("{}");
 
 let sendText = (text, onResult) => {
-    const url = 'http://0.0.0.0:8888/detoxify';
+    const url = 'http://0.0.0.0:8080/detoxify';
     console.log(url);
     xhr = new XMLHttpRequest();
-    xhr.open("POST", url, false);
+    xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     xhr.send(JSON.stringify({"text": text}));
-
-    if (xhr.status !== 200) {
-        console.log(xhr.status + ': ' + xhr.statusText);
-        setTimeout(onResult("detoxify error"), 500);
-    } else {
-        onResult(xhr.responseText);
-    }
+    xhr.onreadystatechange = function() {
+        console.log("onreadystatechange");
+        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            onResult(xhr.responseText);
+        }
+        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status !== 200) {
+            console.log(xhr.status + ': ' + xhr.statusText);
+            setTimeout(onResult("detoxify error"), 500);
+        }
+    };
 };
 
 function updateElement(id, text) {

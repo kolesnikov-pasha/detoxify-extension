@@ -1,7 +1,7 @@
 let data = JSON.parse("{}");
 
 let sendText = (text, onResult) => {
-    const url = 'http://0.0.0.0:8888/detoxify?params="' + JSON.stringify({'text': text} + '"');
+    const url = 'http://0.0.0.0:8888/detoxify?params="{"text":"' + text + '"}"';
     console.log(url);
     xhr = new XMLHttpRequest();
     xhr.open("POST", url, true);

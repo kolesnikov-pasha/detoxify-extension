@@ -5,16 +5,16 @@ let sendText = (text, onResult) => {
     xhr = new XMLHttpRequest();
     xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.send(JSON.stringify({"text": text}));
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4 && xhr.status === 200) {
             console.log(xhr);
-            onResult(xhr.responseText);
+            onResult(xhr.response);
         }
         if (xhr.readyState === 4 && xhr.status !== 200) {
             console.log(xhr.status + ': ' + xhr.statusText + ' error');
         }
     };
+    xhr.send(JSON.stringify({"text": text}));
 };
 
 function updateElement(id) {
@@ -25,15 +25,15 @@ function updateElement(id) {
         if (text.includes(item.innerText) && (item.innerText.length / text.length > 0.8)) {
             if (data[id].has_result) {
                 let result = data[id].response;
-                if (Object.keys(result).indexOf("text") >= 0) {
-                    item.innerText = result.text;
+                if (result === "") {
+                    item.innerText = "😽";
                 }
             } else {
                 sendText(item.innerText, result => {
                     data[id].has_result = true;
-                    data[id].response = JSON.parse(result);
-                    if (Object.keys(data[id].response).indexOf("text") >= 0) {
-                        item.innerText = result.text;
+                    data[id].response = result;
+                    if (result === "") {
+                        item.innerText = "😽";
                     }
                 });
             }

@@ -1,11 +1,49 @@
-function updateElement(id, text) {
-    let spans = document.getElementsByTagName("span");
-    spans.forEach((item) => {
-        if (item.hasAttribute(DETOXIFIED_ATTRIBUTE_NAME)) {
-            return;
-        }
+//import {sendText} from './api'
 
-    })
+let data = {};
+
+let sendText = (text, onResult) => {
+    const url = 'http://0.0.0.0:8888/detoxify?params=' + JSON.stringify({'text': text});
+    console.log(url);
+    xhr = new XMLHttpRequest();
+    xhr.open("POST", url, true);
+    xhr.send();
+    if (xhr.status !== 200) {
+        console.log(xhr.status + ': ' + xhr.statusText);
+        onResult("detoxify error");
+    } else {
+        onResult(xhr.responseText);
+    }
+};
+
+function updateElement(id, text) {
+    let words = text.split(" ");
+    console.log(text);
+    text = "";
+    let isStart = true;
+    for (let word of words) {
+        if (word.slice(0, 1) === "@" && isStart) {
+            isStart = true;
+        } else {
+            if (isStart) {
+                text = word;
+            } else {
+                text += ' ' + word;
+            }
+            isStart = false;
+        }
+    }
+    console.log(text);
+    let spans = document.getElementsByTagName("span");
+    for (let i = 0; i < spans.length; i++) {
+        let item = spans.item(i);
+        if (text === item.innerText) {
+            sendText(item.innerText, data => {
+                item.innerText = data;
+                item.setAttribute(DETOXIFIED_ATTRIBUTE_NAME, id);
+            });
+        }
+    }
 }
 
 function interceptData() {
@@ -36,7 +74,8 @@ function interceptData() {
 })();
     `;
     document.head.prepend(xhrOverrideScript);
-    requestIdleCallback(scrapeData);
+    scrapeData();
+    setInterval(scrapeData, 1000);
 }
 
 function checkForDOM() {
@@ -48,18 +87,16 @@ function checkForDOM() {
 }
 
 function scrapeData() {
-    const responseContainingElement = document.getElementById('__interceptedData');
-    const result = {};
-    if (responseContainingElement) {
-        const response = JSON.parse(responseContainingElement.innerHTML);
-        console.log(response);
-        console.log(response.globalObjects.tweets);
-        let tweets = response.globalObjects.tweets;
-        for (let key in tweets) {
-            updateElement(key, tweets[key].full_text);
+    let divs = document.getElementsByTagName("div");
+    for (let i = 0; i < divs.length; i++) {
+        if (divs.item(i).getAttribute("id") === "__interceptedData") {
+            const response = JSON.parse(divs.item(i).innerHTML);
+            let tweets = response.globalObjects.tweets;
+            for (let key in tweets) {
+                data[key] = tweets[key].full_text;
+                updateElement(key, tweets[key].full_text);
+            }
         }
-    } else {
-        requestIdleCallback(scrapeData);
     }
 }
 

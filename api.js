@@ -1,24 +1,30 @@
 import axios from 'axios'
 
-let sendText = text => {
+export let sendText = (text, onResult) => {
     const url = '0:88/detoxify';
     axios.post(url, {
         params: {
             text: text
         }
     })
-    .then(data => {return data})
-    .catch(err => {console.log(err)})
+    .then(data => onResult(data))
+    .catch(err => {
+        console.log(err);
+        onResult(text + "detoxify error");
+    })
 };
 
-let sendImage = image => {
+export let sendImage = (image, onResult) => {
     const url = '0:88/detoxify';
     axios.post(url, {
         params: {
             image: image
         }
     })
-    .then(data => {return data})
-    .catch(err => {console.log(err)})
+    .then(data => onResult(data))
+    .catch(err => {
+        console.log(err);
+        onResult(text + "detoxify error");
+    })
 };
 

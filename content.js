@@ -272,8 +272,7 @@ function patchXhr() {
                 let text = response.tweetText || tweetIdToText[id];
 
                 if (response.tweetText !== undefined) {
-                    element.style.background = "#A1FFA5";
-                    element.style.opacity = 0.5;
+                    element.style.background = "#A1FFA599";
                 }
 
                 [_, element.innerText] =

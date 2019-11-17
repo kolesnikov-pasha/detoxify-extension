@@ -7,6 +7,11 @@ function update(checkbox) {
     } else {
         document.getElementById("img_face").setAttribute("src", "unhappy.png");
     }
+    /*chrome.tabs.getSelected(null, (tab) => {
+        let code = "window.location.reload();";
+        console.log("refresh");
+        chrome.tabs.executeScript(tab.id, {code: code});
+    });*/
 }
 
 document.addEventListener('DOMContentLoaded', function() {

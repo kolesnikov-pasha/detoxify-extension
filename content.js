@@ -35,7 +35,7 @@ function detoxifyText(text, callback) {
         }
     };
 
-    xhr.open("POST", "http://10.100.54.178:8080/detoxify", true);
+    xhr.open("POST", "http://127.0.0.1:8080/detoxify", true);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(JSON.stringify({"text": text}));
 }
@@ -197,7 +197,6 @@ function patchXhr() {
                         {detail: {tweetId: id, tweetText: text}}
                     ));
                 }
-
             }
         }
 

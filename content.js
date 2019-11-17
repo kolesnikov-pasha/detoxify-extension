@@ -50,6 +50,7 @@ function patchXhr() {
         let nextTweetId = 0;
         let tweetIdToText = {};
         let tweetIdToElement = {};
+        let tweetTextToResponse = new Map();
 
         let observer;
 
@@ -128,12 +129,6 @@ function patchXhr() {
                     let placeholder = makePlaceholder(nextTweetId);
 
                     if (isStatus) {
-                        console.log(tree[key]);
-
-                        for (let i = 0; i < tree[key].length; i++) {
-                            console.log(tree[key].charCodeAt(i));
-                        }
-
                         let [text, complexPlaceholder] =
                             makeComplexPlaceholder(tree[key], placeholder);
 
@@ -151,6 +146,20 @@ function patchXhr() {
                     walkTweets(tree[key]);
                 }
             }
+        }
+
+        function handleResponse(response) {
+            let id = response.tweetId;
+            let element = tweetIdToElement[id];
+            let text = response.tweetText || tweetIdToText[id];
+
+            if (response.tweetText !== undefined) {
+                element.style.background = "#A1FFA5";
+                element.style.opacity = 0.5;
+            }
+
+            [_, element.innerText] =
+                makeComplexPlaceholder(element.innerText, text);
         }
 
         function loadTweetElements() {
@@ -171,15 +180,24 @@ function patchXhr() {
                 }
 
                 let id = parseInt(idStr.slice(fhtagnStart + 1, fhtagnEnd));
+                let text = tweetIdToText[id];
 
                 span.innerText = "⌛️";
-
                 tweetIdToElement[id] = span;
 
-                document.dispatchEvent(new CustomEvent(
-                    "detoxifyTweetRequest",
-                    {detail: {tweetId: id, tweetText: tweetIdToText[id]}}
-                ));
+                let cachedResponse = tweetTextToResponse.get(text);
+
+                if (cachedResponse != undefined) {
+                    let response = Object.assign({}, cachedResponse);
+                    response.tweetId = id;
+                    handleResponse(response);
+                } else {
+                    document.dispatchEvent(new CustomEvent(
+                        "detoxifyTweetRequest",
+                        {detail: {tweetId: id, tweetText: text}}
+                    ));
+                }
+
             }
         }
 
@@ -190,7 +208,6 @@ function patchXhr() {
 
             xhr.open = function(method, url) {
                 this.__detoxify__url = url;
-                console.log(url);
                 return xhrOpen.apply(this, arguments);
             };
 
@@ -267,17 +284,8 @@ function patchXhr() {
 
             document.addEventListener("detoxifyTweetResponse", event => {
                 let response = event.detail;
-                let id = response.tweetId;
-                let element = tweetIdToElement[id];
-                let text = response.tweetText || tweetIdToText[id];
-
-                if (response.tweetText !== undefined) {
-                    element.style.background = "#A1FFA5";
-                    element.style.opacity = 0.5;
-                }
-
-                [_, element.innerText] =
-                    makeComplexPlaceholder(element.innerText, text);
+                tweetTextToResponse.set(tweetIdToText[response.tweetId], response);
+                handleResponse(response);
             });
 
             observer = new MutationObserver((mutations, observer) => {

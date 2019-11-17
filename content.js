@@ -1,3 +1,5 @@
+let storage = chrome.storage.local;
+
 function init() {
     if (document.body && document.head) {
         installBackendApi();
@@ -33,7 +35,7 @@ function detoxifyText(text, callback) {
         }
     };
 
-    xhr.open("POST", "http://127.0.0.1:8080/detoxify", true);
+    xhr.open("POST", "http://10.100.54.178:8080/detoxify", true);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(JSON.stringify({"text": text}));
 }
@@ -269,6 +271,11 @@ function patchXhr() {
                 let element = tweetIdToElement[id];
                 let text = response.tweetText || tweetIdToText[id];
 
+                if (response.tweetText !== undefined) {
+                    element.style.background = "#A1FFA5";
+                    element.style.opacity = 0.5;
+                }
+
                 [_, element.innerText] =
                     makeComplexPlaceholder(element.innerText, text);
             });
@@ -289,4 +296,9 @@ function patchXhr() {
     document.head.prepend(shellcode);
 }
 
-requestIdleCallback(init);
+storage.get("turned_on", (items) => {
+    if (items.turned_on === "true") {
+        requestIdleCallback(init);
+    }
+})
+
